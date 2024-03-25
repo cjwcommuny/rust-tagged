@@ -1,6 +1,6 @@
 use std::marker::PhantomData;
 
-pub struct Tagged<S, B>(PhantomData<S>, B);
+pub struct Tagged<S, B>(PhantomData<fn() -> S>, B);
 
 impl<S, B> AsRef<B> for Tagged<S, B> {
     fn as_ref(&self) -> &B { &self.1 }
@@ -24,6 +24,19 @@ impl<S, B> Tagged<S, B> {
 
 }
 
-#[test]
-fn it_works() {
+#[cfg(test)]
+mod test {
+    use crate::Tagged;
+
+    trait IsSync: Sync {}
+
+    impl<S, B: Sync> IsSync for Tagged<S, B> {}
+
+    trait IsSend: Send {}
+
+    impl<S, B: Send> IsSend for Tagged<S, B> {}
+
+    trait IsUnpin: Unpin {}
+
+    impl<S, B: Unpin> IsUnpin for Tagged<S, B> {}
 }
